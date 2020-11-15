@@ -5,9 +5,11 @@
     <div class="pill" v-else>not admin</div>
     <p style="font-weight:bold">Followers: {{followers}}</p>
     <button @click="followUser">Follow User</button>
-    <form @submit.prevent="createNewTwoot"> <!-- prevent form reload and instead run function that adds a new item -->
+    <form style="display: flex; flex-direction:column; width: 50%; margin: 0 auto;" @submit.prevent="createNewTwoot" :class="{'text-exceeded': newTwootCharacterCount > 180}"> <!-- prevent form reload and instead run function that adds a new item -->
+        <label style="font-weight:bold">New Twoot</label>
+        <p>{{newTwootCharacterCount}}/180</p>
         <textarea v-model="newTwootContent" rows="4" />
-        <label>Type:</label>
+        <label style="font-weight:bold">Type</label>
         <select v-model="selectedTwootType">
           <option :value="option.value" v-for="(option, index) in twootTypes" :key="index">
             {{option.name}}
@@ -32,6 +34,7 @@ export default {
   },
   data() { //data must be a method in Vue 3 - can't be an object
     return {
+      twootSuccess: false,
       newTwootContent: '',
       selectedTwootType: 'instant',
       twootTypes: [
@@ -64,6 +67,9 @@ export default {
   computed: {
     fullName() {
       return `${this.user.firstName} ${this.user.lastName}` //string literal
+    },
+    newTwootCharacterCount() {
+      return this.newTwootContent.length;
     }
   },
   methods: {
@@ -74,13 +80,16 @@ export default {
       alert(`Favorited Twoot! ${id}`)
     },
     createNewTwoot() {
-      if (this.newTwootContent && this.selectedTwootType !== 'draft') {
+      if (this.newTwootContent && this.selectedTwootType !== 'draft' && this.newTwootCharacterCount < 180) {
         this.user.twoots.unshift({ //unshift adds item to start of list and push adds item to end
           id: this.user.twoots.length + 1,
           content: this.newTwootContent,
-        }) 
+        })
+        this.twootSuccess = true;
       }
-      this.newTwootContent = '';
+      if (this.twootSuccess === true) {
+        this.newTwootContent = '';
+      }
     }
   }
 }
@@ -107,5 +116,9 @@ export default {
     display: inline-block;
     padding: 2px 8px;
     color: white;
+  }
+
+  .text-exceeded {
+    background: red;
   }
 </style>
